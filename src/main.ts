@@ -9,7 +9,7 @@ import router from './router'
 // HTTP connection to the API
 const httpLink = createHttpLink({
   // You should use an absolute URL here
-  uri: 'https://library-api.alab.in/graphql'
+  uri: 'https://itsc-api.alab.in/graphql/'
 })
 
 // Cache implementation
