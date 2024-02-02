@@ -10,7 +10,7 @@ const router = createRouter({
       component: HomeView
     },
     {
-      path: '/blog/:id/detail',
+      path: '/blog/:blogId/detail',
       name: 'blog-detail',
       component: () => import('../views/BlogDetail.vue')
     },
@@ -20,7 +20,7 @@ const router = createRouter({
       component: () => import('../views/BlogCreate.vue')
     },
     {
-      path: '/blog/:id/update',
+      path: '/blog/:blogId/update',
       name: 'blog-update',
       component: () => import('../views/BlogUpdate.vue')
     }
