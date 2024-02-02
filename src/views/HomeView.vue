@@ -43,9 +43,11 @@ const { result: blogsResult } = useQuery<BlogsQuery>(gql`
         <div class="flex flex-col">
           <div class="grow">{{ blog.description }}</div>
           <div class="flex justify-end">
-            <button class="bg-[#4527A0] text-white rounded-lg py-4 ml-4 w-[160px]">
-              <span>Edit</span>
-            </button>
+            <RouterLink :to="{ name: 'blog-update', params: { blogId: blog.blogId } }">
+              <button class="bg-[#4527A0] text-white rounded-lg py-4 ml-4 w-[160px]">
+                <span>Edit</span>
+              </button>
+            </RouterLink>
             <button class="bg-[#2962FF] text-white rounded-lg py-4 ml-4 w-[160px]">
               <span>Read More</span>
             </button>

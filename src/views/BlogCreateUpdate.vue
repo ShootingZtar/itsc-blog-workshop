@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { useMutation } from '@vue/apollo-composable'
+import { useLazyQuery, useMutation } from '@vue/apollo-composable'
 import dayjs from 'dayjs'
 import gql from 'graphql-tag'
 import { Form, Field, type SubmissionHandler, type GenericObject } from 'vee-validate'
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 interface MutationAddBlogResult {
   data: {
@@ -15,7 +15,21 @@ interface MutationAddBlogResult {
   }
 }
 
+interface MutationUpdateBlogResult {
+  data: {
+    updateBlog: {
+      blogId: number
+      __typename: string
+    }
+  }
+}
+
 interface MutationAddBlogVariable {
+  requestBlogInput: RequestBlogInput
+}
+
+interface MutationUpdateBlogVariable {
+  blogId: number
   requestBlogInput: RequestBlogInput
 }
 
@@ -28,15 +42,96 @@ interface RequestBlogInput {
   comments: string
 }
 
+interface QueryBlogEditDetail {
+  blogs: {
+    __typename: string
+    title: string
+    description: string
+    createdDate: string
+    authorName: string
+    thumbnailUrl: string
+    comments: {
+      __typename: string
+      message: string
+    }[]
+  }[]
+}
+
 const router = useRouter()
 
-const { mutate, onDone } = useMutation<MutationAddBlogResult, MutationAddBlogVariable>(gql`
+const route = useRoute()
+
+const blogId = route.params['blogId'] ? parseInt(route.params['blogId'].toString(), 10) : null
+
+const { mutate: mutateAddBlog, onDone: onDoneAddBlog } = useMutation<
+  MutationAddBlogResult,
+  MutationAddBlogVariable
+>(gql`
   mutation AddBlog($requestBlogInput: RequestBlogInput) {
     addBlog(blogRequest: $requestBlogInput) {
       blogId
     }
   }
 `)
+
+const { mutate: mutateUpdateBlog, onDone: onDoneUpdateBlog } = useMutation<
+  MutationUpdateBlogResult,
+  MutationUpdateBlogVariable
+>(gql`
+  mutation UpdateBlogByBlogId($blogId: Int!, $requestBlogInput: RequestBlogInput) {
+    updateBlogByBlogId(blogId: $blogId, blogRequest: $requestBlogInput) {
+      blogId
+    }
+  }
+`)
+
+const { result, load } = useLazyQuery<QueryBlogEditDetail>(
+  gql`
+    query BlogEditDetail($blogId: Int) {
+      blogs(where: { blogId: { eq: $blogId } }) {
+        title
+        description
+        createdDate
+        authorName
+        thumbnailUrl
+        comments {
+          message
+        }
+      }
+    }
+  `,
+  { blogId: blogId }
+)
+
+const isUpdateBlog = blogId !== null
+
+if (isUpdateBlog) {
+  load()
+}
+
+const comments = ref<string[]>([''])
+
+const showForm = computed(() => !isUpdateBlog || result.value)
+
+const submitButtonText = computed(() => (isUpdateBlog ? 'Update Blog' : 'Create Blog'))
+
+const formInitialValues = computed(() => {
+  if (!result.value) {
+    return {}
+  }
+
+  const { __typename, ...restData } = result.value.blogs[0]
+
+  return {
+    ...restData,
+    createdDate: dayjs(restData.createdDate).format('YYYY-MM-DD'),
+    comments: restData.comments.map((data) => data.message)
+  }
+})
+
+function onClickAddComment() {
+  comments.value.push('')
+}
 
 const handleSubmit: SubmissionHandler<GenericObject, GenericObject, unknown> = (submitValue) => {
   const requestBlogInput = submitValue as RequestBlogInput
@@ -46,23 +141,30 @@ const handleSubmit: SubmissionHandler<GenericObject, GenericObject, unknown> = (
     createdDate: dayjs(requestBlogInput.createdDate).toISOString()
   }
 
-  mutate({ requestBlogInput: mapRequestBlogInput })
+  if (isUpdateBlog) {
+    mutateUpdateBlog({ blogId: blogId, requestBlogInput: mapRequestBlogInput })
+  } else {
+    mutateAddBlog({ requestBlogInput: mapRequestBlogInput })
+  }
 }
 
-const comments = ref<string[]>([''])
+onDoneAddBlog(() => {
+  router.push({ name: 'dashboard' })
+})
 
-function onClickAddComment() {
-  comments.value.push('')
-}
-
-onDone(() => {
+onDoneUpdateBlog(() => {
   router.push({ name: 'dashboard' })
 })
 </script>
 
 <template>
   <div class="container mx-auto p-8 flex justify-center">
-    <Form class="flex flex-col gap-4 items-center w-full max-w-xs" @submit="handleSubmit">
+    <Form
+      v-if="showForm"
+      :initial-values="formInitialValues"
+      class="flex flex-col gap-4 items-center w-full max-w-xs"
+      @submit="handleSubmit"
+    >
       <div class="flex flex-col gap-2 w-full">
         <label class="font-bold" for="title">Title</label>
         <Field
@@ -153,7 +255,9 @@ onDone(() => {
         </button>
       </div>
 
-      <button type="submit">Submit</button>
+      <button class="bg-[#198754] text-white rounded-lg p-4" type="submit">
+        {{ submitButtonText }}
+      </button>
     </Form>
   </div>
 </template>

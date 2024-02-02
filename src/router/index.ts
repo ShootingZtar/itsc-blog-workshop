@@ -17,12 +17,12 @@ const router = createRouter({
     {
       path: '/blog/create',
       name: 'blog-create',
-      component: () => import('../views/BlogCreate.vue')
+      component: () => import('../views/BlogCreateUpdate.vue')
     },
     {
       path: '/blog/:blogId/update',
       name: 'blog-update',
-      component: () => import('../views/BlogUpdate.vue')
+      component: () => import('../views/BlogCreateUpdate.vue')
     }
   ]
 })
