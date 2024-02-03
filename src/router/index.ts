@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import DashboardView from '../views/DashboardView.vue'
+import HomeView from '../views/HomeView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -7,22 +7,22 @@ const router = createRouter({
     {
       path: '/',
       name: 'dashboard',
-      component: DashboardView
+      component: HomeView
     },
     {
-      path: '/blog/:id/detail',
+      path: '/blog/:blogId/detail',
       name: 'blog-detail',
       component: () => import('../views/BlogDetail.vue')
     },
     {
       path: '/blog/create',
       name: 'blog-create',
-      component: () => import('../views/BlogCreate.vue')
+      component: () => import('../views/BlogCreateUpdate.vue')
     },
     {
-      path: '/blog/:id/update',
+      path: '/blog/:blogId/update',
       name: 'blog-update',
-      component: () => import('../views/BlogUpdate.vue')
+      component: () => import('../views/BlogCreateUpdate.vue')
     }
   ]
 })
