@@ -105,11 +105,18 @@ const { result, load } = useLazyQuery<QueryBlogEditDetail>(
 
 const isUpdateBlog = blogId !== null
 
-if (isUpdateBlog) {
-  load()
-}
+const countFormComments = ref<number>(1)
 
-const comments = ref<string[]>([''])
+if (isUpdateBlog) {
+  const loadResult = load() || Promise.resolve<QueryBlogEditDetail | null>(null)
+  loadResult.then((value) => {
+    if (!value) {
+      return
+    }
+
+    countFormComments.value = value.blogs[0].comments.length
+  })
+}
 
 const showForm = computed(() => !isUpdateBlog || result.value)
 
@@ -130,7 +137,7 @@ const formInitialValues = computed(() => {
 })
 
 function onClickAddComment() {
-  comments.value.push('')
+  countFormComments.value++
 }
 
 const handleSubmit: SubmissionHandler<GenericObject, GenericObject, unknown> = (submitValue) => {
@@ -219,7 +226,7 @@ onDoneUpdateBlog(() => {
 
       <div class="flex flex-col gap-2 w-full relative">
         <Field
-          v-for="(_, index) in comments"
+          v-for="(_, index) in countFormComments"
           :key="index"
           class="px-4 py-2 rounded-lg"
           :name="`comments[${index}]`"
