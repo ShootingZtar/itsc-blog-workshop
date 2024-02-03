@@ -100,8 +100,7 @@ const { result, load } = useLazyQuery<QueryBlogEditDetail>(
       }
     }
   `,
-  { blogId: blogId },
-  { fetchPolicy: 'no-cache' }
+  { blogId: blogId }
 )
 
 const isUpdateBlog = blogId !== null

@@ -15,10 +15,22 @@ const httpLink = createHttpLink({
 // Cache implementation
 const cache = new InMemoryCache()
 
+const defaultOptions: DefaultOptions = {
+  watchQuery: {
+    fetchPolicy: 'no-cache',
+    errorPolicy: 'ignore',
+  },
+  query: {
+    fetchPolicy: 'no-cache',
+    errorPolicy: 'all',
+  },
+}
+
 // Create the apollo client
 const apolloClient = new ApolloClient({
   link: httpLink,
-  cache
+  cache,
+  defaultOptions,
 })
 
 const app = createApp({

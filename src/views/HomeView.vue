@@ -20,9 +20,7 @@ const { result: blogsResult } = useQuery<BlogsQuery>(gql`
       description
       thumbnailUrl
     }
-  }`,
-  null,
-  { fetchPolicy: 'no-cache' }
+  }`
 )
 </script>
 

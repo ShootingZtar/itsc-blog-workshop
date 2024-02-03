@@ -43,9 +43,7 @@ const { result: blogsResult } = useQuery<BlogQuery>(gql`
         message
       }
     }
-  }`,
-  null,
-  { fetchPolicy: 'no-cache' }
+  }`
 )
 const currentBlog = computed(() => blogsResult.value?.blogs[0])
 
